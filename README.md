@@ -49,4 +49,7 @@ npm run dev
 
 1. `vercel deploy`
 2. Configurez les variables d'environnement dans le dashboard Vercel
-3. Générez un QR code pointant vers `https://votre-domaine.vercel.app/audience`
+3. **Important** : Désactivez la protection de déploiement pour que l'audience puisse scanner le QR code sans se connecter à Vercel :
+   - Project Settings → **Deployment Protection**
+   - Mettez **Vercel Authentication** sur **Disabled** (ou ajoutez une exception pour votre domaine de production)
+4. Générez un QR code pointant vers `https://votre-domaine.vercel.app/audience`

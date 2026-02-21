@@ -35,7 +35,18 @@ export function useSession() {
 
         setSession(currentSession);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Erreur de chargement');
+        const msg = err instanceof Error ? err.message : 'Erreur de chargement';
+        const isConfigError =
+          !process.env.NEXT_PUBLIC_SUPABASE_URL ||
+          !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+          process.env.NEXT_PUBLIC_SUPABASE_URL.includes('placeholder') ||
+          msg.includes('fetch') ||
+          msg.includes('Failed to fetch');
+        setError(
+          isConfigError
+            ? 'Configuration manquante. Vérifiez que les variables Supabase sont définies (Vercel → Settings → Environment Variables).'
+            : msg
+        );
       } finally {
         setLoading(false);
       }

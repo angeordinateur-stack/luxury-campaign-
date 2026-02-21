@@ -185,8 +185,11 @@ export default function PresenterPage() {
 
   if (error || !session) {
     return (
-      <div className="presenter-view min-h-screen flex items-center justify-center px-6">
-        <p className="text-red-400 text-center">{error || 'Session introuvable.'}</p>
+      <div className="presenter-view min-h-screen flex flex-col items-center justify-center px-6 gap-6">
+        <p className="text-red-400 text-center max-w-md">{error || 'Session introuvable.'}</p>
+        <a href="/" className="font-display text-sm tracking-[0.15em] uppercase text-accent hover:underline">
+          ← Retour à l&apos;accueil
+        </a>
       </div>
     );
   }
@@ -235,8 +238,23 @@ export default function PresenterPage() {
         />
       )}
 
+      {/* Bouton Suivant + raccourcis clavier */}
+      {session.phase !== 'generating' && session.phase !== 'reveal' && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2">
+          <button
+            onClick={() => advancePhase()}
+            className="px-8 py-3 border border-[var(--accent-gold)] text-[var(--accent-gold)] font-display text-sm tracking-[0.15em] uppercase hover:bg-[var(--accent-gold)] hover:text-[var(--bg-dark)] transition-colors"
+          >
+            Suivant →
+          </button>
+          <p className="text-[10px] text-white/40 font-mono">
+            ou touche → | phase: {session.phase}
+          </p>
+        </div>
+      )}
+
       <div className="fixed bottom-4 right-4 text-[10px] text-white/30 font-mono">
-        {session.phase}
+        R = reset · F = plein écran
       </div>
     </div>
   );

@@ -33,7 +33,7 @@ const config: Config = {
       },
       animation: {
         'fade-in': 'fade-in 0.8s ease-out forwards',
-        'gold-extend': 'gold-extend 0.5s ease-out forwards',
+        'gold-extend': 'gold-extend 0.8s ease-out forwards',
       },
     },
   },

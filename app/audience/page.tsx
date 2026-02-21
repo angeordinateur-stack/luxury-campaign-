@@ -23,10 +23,13 @@ export default function AudiencePage() {
 
   if (error || !session) {
     return (
-      <div className="audience-view min-h-screen flex items-center justify-center px-6">
-        <p className="font-body text-red-600 text-center">
+      <div className="audience-view min-h-screen flex flex-col items-center justify-center px-6 gap-6">
+        <p className="font-body text-red-600 text-center max-w-md">
           {error || 'Impossible de charger la session.'}
         </p>
+        <a href="/" className="font-display text-sm tracking-[0.15em] uppercase text-[var(--accent-gold)] hover:underline">
+          ← Retour à l&apos;accueil
+        </a>
       </div>
     );
   }
