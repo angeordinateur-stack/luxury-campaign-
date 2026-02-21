@@ -202,7 +202,11 @@ export default function PresenterPage() {
   return (
     <div className="presenter-view min-h-screen relative">
       {session.phase === 'standby' && (
-        <StandbyScreen audienceUrl={audienceUrl} participantCount={participantCount} />
+        <StandbyScreen
+          audienceUrl={audienceUrl}
+          participantCount={participantCount}
+          onNext={() => advancePhase()}
+        />
       )}
       {session.phase === 'brand_naming' && (
         <BrandNameCollection sessionId={session.id} />
@@ -238,22 +242,22 @@ export default function PresenterPage() {
         />
       )}
 
-      {/* Bouton Suivant + raccourcis clavier */}
+      {/* Bouton Suivant - toujours visible sauf pendant génération/révélation */}
       {session.phase !== 'generating' && session.phase !== 'reveal' && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2">
+        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center gap-3">
           <button
             onClick={() => advancePhase()}
-            className="px-8 py-3 border border-[var(--accent-gold)] text-[var(--accent-gold)] font-display text-sm tracking-[0.15em] uppercase hover:bg-[var(--accent-gold)] hover:text-[var(--bg-dark)] transition-colors"
+            className="px-12 py-4 bg-[var(--accent-gold)] text-[var(--bg-dark)] font-display text-base font-semibold tracking-[0.2em] uppercase hover:bg-white hover:text-[var(--bg-dark)] transition-all shadow-lg"
           >
-            Suivant →
+            SUIVANT →
           </button>
-          <p className="text-[10px] text-white/40 font-mono">
-            ou touche → | phase: {session.phase}
+          <p className="text-xs text-white/50">
+            ou touche → du clavier
           </p>
         </div>
       )}
 
-      <div className="fixed bottom-4 right-4 text-[10px] text-white/30 font-mono">
+      <div className="fixed bottom-4 right-4 z-50 text-[10px] text-white/40 font-mono">
         R = reset · F = plein écran
       </div>
     </div>
