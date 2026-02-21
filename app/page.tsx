@@ -28,7 +28,7 @@ export default function HomePage() {
         <div className="h-px w-24 bg-[var(--accent-gold)] mb-8 opacity-0 animate-gold-extend [animation-delay:400ms]" />
 
         <p className="font-body text-[var(--text-muted)] mb-14 text-center text-lg leading-relaxed italic opacity-0 animate-fade-in [animation-delay:500ms]">
-          Expérience interactive de co-création de campagne luxe avec l&apos;IA
+          Interactive luxury campaign co-creation experience with AI
         </p>
 
         <div className="flex flex-col sm:flex-row gap-5 opacity-0 animate-fade-in [animation-delay:700ms]">
@@ -37,7 +37,7 @@ export default function HomePage() {
             className="group px-10 py-5 border-2 border-[var(--accent-gold)] text-[var(--accent-gold)] font-display text-sm tracking-[0.2em] uppercase text-center transition-all duration-300 hover:bg-[var(--accent-gold)] hover:text-white hover:shadow-lg hover:shadow-[var(--accent-gold)]/20"
           >
             <span className="block group-hover:tracking-[0.25em] transition-all duration-300">
-              Vue audience
+              Audience view
             </span>
           </Link>
           <Link
@@ -45,7 +45,7 @@ export default function HomePage() {
             className="group px-10 py-5 bg-[var(--bg-dark)] text-[var(--text-light)] font-display text-sm tracking-[0.2em] uppercase text-center transition-all duration-300 hover:bg-[var(--accent-gold)] hover:text-white hover:shadow-lg hover:shadow-[var(--accent-gold)]/30"
           >
             <span className="block group-hover:tracking-[0.25em] transition-all duration-300">
-              Vue présentateur
+              Presenter view
             </span>
           </Link>
         </div>

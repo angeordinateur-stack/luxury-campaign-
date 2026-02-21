@@ -25,7 +25,7 @@ export function VoteResults({
     <div className="presenter-view min-h-screen flex flex-col items-center justify-center px-12">
       <FadeIn>
         <h2 className="font-display text-sm tracking-[0.15em] uppercase text-accent mb-4">
-          Silhouette
+          SILHOUETTE
         </h2>
         <p className="font-display text-3xl md:text-5xl tracking-[0.1em] mb-8">
           {getLabel('silhouette', winningSilhouette)}
@@ -33,7 +33,7 @@ export function VoteResults({
       </FadeIn>
       <FadeIn delay={1000}>
         <h2 className="font-display text-sm tracking-[0.15em] uppercase text-accent mb-4">
-          Ambiance
+          MOOD
         </h2>
         <p className="font-display text-3xl md:text-5xl tracking-[0.1em] mb-8">
           {getLabel('mood', winningMood)}
@@ -41,7 +41,7 @@ export function VoteResults({
       </FadeIn>
       <FadeIn delay={2000}>
         <h2 className="font-display text-sm tracking-[0.15em] uppercase text-accent mb-4">
-          Cadre
+          SETTING
         </h2>
         <p className="font-display text-3xl md:text-5xl tracking-[0.1em] mb-12">
           {getLabel('setting', winningSetting)}

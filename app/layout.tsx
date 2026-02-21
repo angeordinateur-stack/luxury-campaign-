@@ -3,7 +3,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Luxury AI Campaign Co-Creator",
-  description: "Co-créez une campagne luxe avec l'IA en temps réel",
+  description: "Interactive luxury campaign co-creation with AI in real time",
 };
 
 export default function RootLayout({
@@ -12,7 +12,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="fr">
+    <html lang="en">
       <body className="antialiased">
         {children}
       </body>

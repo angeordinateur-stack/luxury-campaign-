@@ -36,7 +36,7 @@ export function CampaignReveal({
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center text-muted">
-              Image en cours de chargement...
+              Image loading...
             </div>
           )}
         </div>
@@ -57,14 +57,14 @@ export function CampaignReveal({
 
         <FadeIn delay={800}>
           <p className="font-display text-xs tracking-[0.15em] uppercase text-accent mb-2">
-            CIBLE
+            TARGET
           </p>
           <p className="font-body text-lg mb-8">{targetAudience}</p>
         </FadeIn>
 
         <FadeIn delay={1200}>
           <p className="font-display text-xs tracking-[0.15em] uppercase text-accent mb-2">
-            CANAUX
+            CHANNELS
           </p>
           <ul className="font-body text-lg space-y-1 mb-12">
             {launchChannels.map((ch, i) => (
@@ -75,8 +75,8 @@ export function CampaignReveal({
 
         <FadeIn delay={1600}>
           <p className="font-body text-sm text-muted">
-            Concept co-créé par {participantCount} humain{participantCount !== 1 ? 's' : ''} et un
-            algorithme en 90 secondes
+            Concept co-created by {participantCount} human{participantCount !== 1 ? 's' : ''} and one
+            algorithm in 90 seconds
           </p>
         </FadeIn>
       </div>

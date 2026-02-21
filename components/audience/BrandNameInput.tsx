@@ -45,7 +45,7 @@ export function BrandNameInput({ sessionId, onSubmit }: BrandNameInputProps) {
       <div className="audience-view min-h-screen flex flex-col items-center justify-center px-6">
         <FadeIn>
           <p className="font-body text-lg text-center text-[var(--text-muted)]">
-            Votre proposition a été envoyée. Regardez l&apos;écran.
+            Your proposal has been submitted. Watch the screen.
           </p>
         </FadeIn>
       </div>
@@ -56,10 +56,10 @@ export function BrandNameInput({ sessionId, onSubmit }: BrandNameInputProps) {
     <div className="audience-view min-h-screen flex flex-col items-center justify-center px-6">
       <FadeIn>
         <h1 className="font-display font-semibold text-xl md:text-2xl text-center tracking-[0.15em] uppercase mb-2">
-          Nommez votre maison
+          Name your maison
         </h1>
         <p className="font-body text-sm text-[var(--text-muted)] text-center mb-8">
-          Proposez un nom de marque luxe. Qu&apos;il soit iconique.
+          Type a luxury brand name. Make it iconic.
         </p>
         <form onSubmit={handleSubmit} className="w-full max-w-sm">
           <input
@@ -75,7 +75,7 @@ export function BrandNameInput({ sessionId, onSubmit }: BrandNameInputProps) {
             disabled={!name.trim() || loading}
             className="w-full mt-4 px-4 py-4 tap-target border border-[var(--accent-gold)] text-[var(--accent-gold)] font-display text-sm tracking-[0.15em] uppercase hover:bg-[var(--accent-gold)] hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? 'Envoi...' : 'Proposer'}
+            {loading ? 'Submitting...' : 'Propose'}
           </button>
         </form>
       </FadeIn>

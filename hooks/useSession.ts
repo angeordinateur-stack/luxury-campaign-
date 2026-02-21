@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import type { Session } from '@/lib/database.types';
 
@@ -8,6 +8,22 @@ export function useSession() {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const refetch = useCallback(async () => {
+    try {
+      const { data: sessions, error: fetchError } = await supabase
+        .from('sessions')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(1);
+
+      if (fetchError) throw fetchError;
+      const currentSession = sessions?.[0] ?? null;
+      setSession(currentSession);
+    } catch (err) {
+      console.error('Refetch error:', err);
+    }
+  }, []);
 
   useEffect(() => {
     async function fetchOrCreateSession() {
@@ -35,7 +51,7 @@ export function useSession() {
 
         setSession(currentSession);
       } catch (err) {
-        const msg = err instanceof Error ? err.message : 'Erreur de chargement';
+        const msg = err instanceof Error ? err.message : 'Loading error';
         const isConfigError =
           !process.env.NEXT_PUBLIC_SUPABASE_URL ||
           !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
@@ -44,7 +60,7 @@ export function useSession() {
           msg.includes('Failed to fetch');
         setError(
           isConfigError
-            ? 'Configuration manquante. Vérifiez que les variables Supabase sont définies (Vercel → Settings → Environment Variables).'
+            ? 'Missing configuration. Add Supabase env vars in Vercel → Settings → Environment Variables.'
             : msg
         );
       } finally {
@@ -74,5 +90,5 @@ export function useSession() {
     };
   }, [session?.id]);
 
-  return { session, loading, error };
+  return { session, loading, error, refetch };
 }

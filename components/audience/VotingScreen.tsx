@@ -73,7 +73,7 @@ export function VotingScreen({ sessionId, voterId, onSubmit }: VotingScreenProps
       <div className="audience-view min-h-screen flex flex-col items-center justify-center px-6">
         <FadeIn>
           <p className="font-body text-lg text-center text-[var(--text-muted)]">
-            La campagne est en cours de création. Regardez l&apos;écran.
+            The campaign is being created. Watch the screen.
           </p>
         </FadeIn>
       </div>
@@ -84,7 +84,7 @@ export function VotingScreen({ sessionId, voterId, onSubmit }: VotingScreenProps
     <div className="audience-view min-h-screen flex flex-col items-center px-6 py-12">
       <FadeIn>
         <h1 className="font-display font-semibold text-xl md:text-2xl text-center tracking-[0.15em] uppercase mb-2">
-          Définissez la vision
+          Define the vision
         </h1>
         <GoldDivider className="w-24 mx-auto mb-8" />
       </FadeIn>
@@ -94,8 +94,8 @@ export function VotingScreen({ sessionId, voterId, onSubmit }: VotingScreenProps
           <FadeIn key={category} delay={idx * 100}>
             <p className="font-display text-xs tracking-[0.15em] uppercase text-[var(--text-muted)] mb-3">
               {category === 'silhouette' && 'SILHOUETTE'}
-              {category === 'mood' && 'AMBIANCE'}
-              {category === 'setting' && 'CADRE'}
+              {category === 'mood' && 'MOOD'}
+              {category === 'setting' && 'SETTING'}
             </p>
             <div className="space-y-2">
               {VOTE_OPTIONS[category].map((opt) => (

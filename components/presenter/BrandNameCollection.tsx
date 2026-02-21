@@ -48,7 +48,7 @@ export function BrandNameCollection({ sessionId }: BrandNameCollectionProps) {
   return (
     <div className="presenter-view min-h-screen flex flex-col items-center justify-center px-12">
       <h1 className="font-display font-light text-4xl md:text-6xl tracking-[0.15em] uppercase mb-16">
-        Nommez votre maison
+        Name your maison
       </h1>
       <div className="flex flex-wrap justify-center gap-6 max-w-4xl">
         {names.map((item, i) => (

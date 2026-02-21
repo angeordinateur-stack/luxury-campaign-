@@ -13,7 +13,7 @@ export async function POST(request: NextRequest) {
       const selected = names?.length ? names[0] : FALLBACK_BRAND;
       return NextResponse.json({
         selected_name: selected,
-        rationale: 'Sélection par défaut.',
+        rationale: 'Default selection.',
       });
     }
 

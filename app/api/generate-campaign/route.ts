@@ -12,61 +12,6 @@ function getLabel(category: 'silhouette' | 'mood' | 'setting', key: string): str
   return opt?.label ?? key;
 }
 
-async function generateImage(prompt: string): Promise<string | null> {
-  const apiKey = process.env.HIGGSFIELD_API_KEY;
-  if (!apiKey) return null;
-
-  try {
-    const authParts = apiKey.includes(':') ? apiKey : `${apiKey}:`;
-    const res = await fetch('https://platform.higgsfield.ai/higgsfield-ai/soul/standard', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Key ${authParts}`,
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-      },
-      body: JSON.stringify({
-        prompt,
-        aspect_ratio: '3:4',
-        resolution: '720p',
-      }),
-    });
-
-    if (!res.ok) {
-      const err = await res.text();
-      console.error('Higgsfield error:', err);
-      return null;
-    }
-
-    const data = await res.json();
-    const requestId = data.request_id;
-
-    if (!requestId) return null;
-
-    for (let i = 0; i < 60; i++) {
-      await new Promise((r) => setTimeout(r, 2000));
-      const statusRes = await fetch(
-        `https://platform.higgsfield.ai/requests/${requestId}/status`,
-        {
-          headers: { 'Authorization': `Key ${authParts}` },
-        }
-      );
-      const statusData = await statusRes.json();
-
-      if (statusData.status === 'completed' && statusData.images?.[0]?.url) {
-        return statusData.images[0].url;
-      }
-      if (statusData.status === 'failed' || statusData.status === 'nsfw') {
-        return null;
-      }
-    }
-    return null;
-  } catch (err) {
-    console.error('Higgsfield:', err);
-    return null;
-  }
-}
-
 export async function POST(request: NextRequest) {
   try {
     const { sessionId } = await request.json();
@@ -83,7 +28,7 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (!session) {
-      return NextResponse.json({ error: 'Session introuvable' }, { status: 404 });
+      return NextResponse.json({ error: 'Session not found' }, { status: 404 });
     }
 
     const brandName = session.selected_brand || 'Maison';
@@ -95,38 +40,37 @@ export async function POST(request: NextRequest) {
     const moodLabel = getLabel('mood', mood);
     const settingLabel = getLabel('setting', setting);
 
-    const prompt = `Tu es le directeur créatif d'une maison de luxe appelée ${brandName}.
+    const imagePrompt = buildImagePrompt(silhouette, mood, setting, brandName);
 
-Le brief créatif de la nouvelle campagne est :
-- Silhouette : ${silhouetteLabel}
-- Ambiance : ${moodLabel}
-- Cadre : ${settingLabel}
+    const campaignPrompt = `You are the creative director of a luxury fashion house called ${brandName}.
 
-Génère un concept de campagne. Réponds en JSON uniquement :
+The creative brief for the new campaign is:
+- Silhouette: ${silhouetteLabel}
+- Mood: ${moodLabel}
+- Setting: ${settingLabel}
+
+Generate a campaign concept. Respond in JSON only:
 {
-  "tagline": "Un slogan de campagne luxe, max 8 mots, poétique et évocateur",
-  "target_audience": "Une phrase décrivant le client idéal, max 20 mots",
-  "launch_channels": ["canal 1", "canal 2", "canal 3"],
-  "campaign_name": "Un nom de campagne interne en 2-3 mots"
+  "tagline": "A luxury campaign tagline, max 8 words, poetic and evocative",
+  "target_audience": "One sentence describing the ideal customer, max 20 words",
+  "launch_channels": ["channel 1", "channel 2", "channel 3"],
+  "campaign_name": "A 2-3 word internal campaign name"
 }
 
-Sois spécifique au brief. Pense Vogue Italia, Jacquemus, ancien Céline. Pas de langage marketing générique.`;
+Be specific to the brief. Think Vogue Italia, Jacquemus, old Céline. No generic marketing language.`;
 
-    const [claudeRes, imageUrl] = await Promise.all([
-      anthropic.messages
-        .create({
-          model: 'claude-sonnet-4-20250514',
-          max_tokens: 512,
-          messages: [{ role: 'user', content: prompt }],
-        })
-        .then((m) => {
-          const text = (m.content[0] as { text?: string })?.text?.trim() || '{}';
-          const jsonMatch = text.match(/\{[\s\S]*\}/);
-          return jsonMatch ? JSON.parse(jsonMatch[0]) : null;
-        })
-        .catch(() => null),
-      generateImage(buildImagePrompt(silhouette, mood, setting, brandName)),
-    ]);
+    const claudeRes = await anthropic.messages
+      .create({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 512,
+        messages: [{ role: 'user', content: campaignPrompt }],
+      })
+      .then((m) => {
+        const text = (m.content[0] as { text?: string })?.text?.trim() || '{}';
+        const jsonMatch = text.match(/\{[\s\S]*\}/);
+        return jsonMatch ? JSON.parse(jsonMatch[0]) : null;
+      })
+      .catch(() => null);
 
     const campaign = claudeRes || FALLBACK_CAMPAIGN;
     const tagline = campaign.tagline || FALLBACK_CAMPAIGN.tagline;
@@ -141,8 +85,7 @@ Sois spécifique au brief. Pense Vogue Italia, Jacquemus, ancien Céline. Pas de
         campaign_target: target_audience,
         campaign_channels: launch_channels,
         campaign_name,
-        campaign_image_url: imageUrl,
-        phase: 'reveal',
+        phase: 'generating',
         updated_at: new Date().toISOString(),
       })
       .eq('id', sessionId);
@@ -152,12 +95,13 @@ Sois spécifique au brief. Pense Vogue Italia, Jacquemus, ancien Céline. Pas de
       target_audience,
       launch_channels,
       campaign_name,
-      image_url: imageUrl,
+      image_prompt: imagePrompt,
+      campaign_prompt: campaignPrompt,
     });
   } catch (err) {
     console.error(err);
     return NextResponse.json(
-      { error: 'Erreur de génération', ...FALLBACK_CAMPAIGN },
+      { error: 'Generation error', ...FALLBACK_CAMPAIGN },
       { status: 500 }
     );
   }

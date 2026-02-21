@@ -16,7 +16,7 @@ export default function AudiencePage() {
   if (loading) {
     return (
       <div className="audience-view min-h-screen flex items-center justify-center">
-        <p className="font-body text-[var(--text-muted)]">Connexion...</p>
+        <p className="font-body text-[var(--text-muted)]">Connecting...</p>
       </div>
     );
   }
@@ -28,7 +28,7 @@ export default function AudiencePage() {
           {error || 'Impossible de charger la session.'}
         </p>
         <a href="/" className="font-display text-sm tracking-[0.15em] uppercase text-[var(--accent-gold)] hover:underline">
-          ← Retour à l&apos;accueil
+          ← Back to home
         </a>
       </div>
     );
@@ -56,7 +56,7 @@ export default function AudiencePage() {
         return (
           <div className="audience-view min-h-screen flex items-center justify-center px-6">
             <p className="font-body text-[var(--text-muted)] text-center">
-              La campagne est en cours de création. Regardez l&apos;écran.
+              The campaign is being created. Watch the screen.
             </p>
           </div>
         );

@@ -13,14 +13,19 @@ import { supabase } from '@/lib/supabase';
 import { PHASES } from '@/lib/constants';
 
 export default function PresenterPage() {
-  const { session, loading, error } = useSession();
+  const { session, loading, error, refetch } = useSession();
   const [participantCount, setParticipantCount] = useState(0);
+  const [isAdvancing, setIsAdvancing] = useState(false);
 
   const advancePhase = useCallback(async () => {
-    if (!session) return;
+    if (!session || isAdvancing) return;
+    setIsAdvancing(true);
 
     const idx = PHASES.indexOf(session.phase);
-    if (idx < 0 || idx >= PHASES.length - 1) return;
+    if (idx < 0 || idx >= PHASES.length - 1) {
+      setIsAdvancing(false);
+      return;
+    }
 
     const nextPhase = PHASES[idx + 1];
 
@@ -41,9 +46,11 @@ export default function PresenterPage() {
       if (!res.ok) {
         await supabase
           .from('sessions')
-          .update({ phase: 'brand_reveal', selected_brand: 'MAISON ÉCLAIRE', selected_rationale: 'Sélection par défaut.' })
+          .update({ phase: 'brand_reveal', selected_brand: 'MAISON ÉCLAIRE', selected_rationale: 'Default selection.' })
           .eq('id', session.id);
       }
+      await refetch();
+      setIsAdvancing(false);
       return;
     }
 
@@ -77,6 +84,8 @@ export default function PresenterPage() {
           updated_at: new Date().toISOString(),
         })
         .eq('id', session.id);
+      await refetch();
+      setIsAdvancing(false);
       return;
     }
 
@@ -86,21 +95,26 @@ export default function PresenterPage() {
         .update({ phase: 'generating', updated_at: new Date().toISOString() })
         .eq('id', session.id);
 
-      fetch('/api/generate-campaign', {
+      await fetch('/api/generate-campaign', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ sessionId: session.id }),
       });
+      await refetch();
+      setIsAdvancing(false);
       return;
     }
 
     if (session.phase === 'standby' || session.phase === 'brand_reveal') {
-      await supabase
+      const { error: updateError } = await supabase
         .from('sessions')
         .update({ phase: nextPhase, updated_at: new Date().toISOString() })
         .eq('id', session.id);
+      if (updateError) console.error('Update error:', updateError);
+      await refetch();
     }
-  }, [session]);
+    setIsAdvancing(false);
+  }, [session, refetch, isAdvancing]);
 
   const goBack = useCallback(async () => {
     if (!session) return;
@@ -111,7 +125,8 @@ export default function PresenterPage() {
       .from('sessions')
       .update({ phase: prevPhase, updated_at: new Date().toISOString() })
       .eq('id', session.id);
-  }, [session]);
+    await refetch();
+  }, [session, refetch]);
 
   const resetToStandby = useCallback(async () => {
     if (!session) return;
@@ -132,7 +147,8 @@ export default function PresenterPage() {
         updated_at: new Date().toISOString(),
       })
       .eq('id', session.id);
-  }, [session]);
+    await refetch();
+  }, [session, refetch]);
 
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
@@ -178,7 +194,7 @@ export default function PresenterPage() {
   if (loading) {
     return (
       <div className="presenter-view min-h-screen flex items-center justify-center">
-        <p className="text-muted">Chargement...</p>
+        <p className="text-muted">Loading...</p>
       </div>
     );
   }
@@ -186,9 +202,9 @@ export default function PresenterPage() {
   if (error || !session) {
     return (
       <div className="presenter-view min-h-screen flex flex-col items-center justify-center px-6 gap-6">
-        <p className="text-red-400 text-center max-w-md">{error || 'Session introuvable.'}</p>
+        <p className="text-red-400 text-center max-w-md">{error || 'Session not found.'}</p>
         <a href="/" className="font-display text-sm tracking-[0.15em] uppercase text-accent hover:underline">
-          ← Retour à l&apos;accueil
+          ← Back to home
         </a>
       </div>
     );
@@ -229,7 +245,18 @@ export default function PresenterPage() {
             winningSetting={session.winning_setting}
           />
         )}
-      {session.phase === 'generating' && <GeneratingScreen />}
+      {session.phase === 'generating' && (
+        <GeneratingScreen
+          session={session}
+          onImageUrlSubmit={async (url) => {
+            await supabase
+              .from('sessions')
+              .update({ campaign_image_url: url, phase: 'reveal', updated_at: new Date().toISOString() })
+              .eq('id', session.id);
+            await refetch();
+          }}
+        />
+      )}
       {session.phase === 'reveal' && (
         <CampaignReveal
           brandName={session.selected_brand || ''}
@@ -242,23 +269,24 @@ export default function PresenterPage() {
         />
       )}
 
-      {/* Bouton Suivant - toujours visible sauf pendant génération/révélation */}
+      {/* Next button - visible except during generating/reveal */}
       {session.phase !== 'generating' && session.phase !== 'reveal' && (
-        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center gap-3">
+        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[100] flex flex-col items-center gap-3">
           <button
             onClick={() => advancePhase()}
-            className="px-12 py-4 bg-[var(--accent-gold)] text-[var(--bg-dark)] font-display text-base font-semibold tracking-[0.2em] uppercase hover:bg-white hover:text-[var(--bg-dark)] transition-all shadow-lg"
+            disabled={isAdvancing}
+            className="px-12 py-4 bg-[var(--accent-gold)] text-[var(--bg-dark)] font-display text-base font-semibold tracking-[0.2em] uppercase hover:bg-white hover:text-[var(--bg-dark)] transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            SUIVANT →
+            {isAdvancing ? '...' : 'NEXT →'}
           </button>
           <p className="text-xs text-white/50">
-            ou touche → du clavier
+            or press → key
           </p>
         </div>
       )}
 
-      <div className="fixed bottom-4 right-4 z-50 text-[10px] text-white/40 font-mono">
-        R = reset · F = plein écran
+      <div className="fixed bottom-4 right-4 z-[100] text-[10px] text-white/40 font-mono">
+        R = reset · F = fullscreen
       </div>
     </div>
   );

@@ -89,7 +89,7 @@ export function VotingDisplay({ sessionId }: VotingDisplayProps) {
   return (
     <div className="presenter-view min-h-screen flex flex-col items-center justify-center px-12">
       <h1 className="font-display font-light text-4xl md:text-6xl tracking-[0.15em] uppercase mb-16">
-        Définissez la vision
+        Define the vision
       </h1>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-12 w-full max-w-5xl">
         {(['silhouette', 'mood', 'setting'] as const).map((category) => {
@@ -101,8 +101,8 @@ export function VotingDisplay({ sessionId }: VotingDisplayProps) {
             <div key={category} className="space-y-4">
               <p className="font-display text-sm tracking-[0.15em] uppercase text-accent">
                 {category === 'silhouette' && 'SILHOUETTE'}
-                {category === 'mood' && 'AMBIANCE'}
-                {category === 'setting' && 'CADRE'}
+                {category === 'mood' && 'MOOD'}
+                {category === 'setting' && 'SETTING'}
               </p>
               {options.map((opt) => {
                 const count = categoryCounts[opt.key] ?? 0;
