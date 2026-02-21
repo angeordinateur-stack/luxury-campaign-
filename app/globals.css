@@ -1,27 +1,61 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400&family=Libre+Baskerville:ital,wght@0,400;1,400&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --bg-primary: #FAF8F5;
+  --bg-dark: #1A1A1A;
+  --text-primary: #1A1A1A;
+  --text-light: #FAF8F5;
+  --text-muted: #8A8578;
+  --accent-gold: #C4A265;
+  --border-light: #E8E4DE;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  box-sizing: border-box;
 }
 
 body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Libre Baskerville', Georgia, serif;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  letter-spacing: 0.02em;
 }
 
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
-  }
+.font-display {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  letter-spacing: 0.15em;
+}
+
+/* Audience view - light theme */
+.audience-view {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+/* Presenter view - dark theme */
+.presenter-view {
+  background-color: var(--bg-dark);
+  color: var(--text-light);
+}
+
+.presenter-view .text-muted {
+  color: var(--text-muted);
+}
+
+.presenter-view .text-accent {
+  color: var(--accent-gold);
+}
+
+/* No border radius - sharp edges */
+.rounded-none {
+  border-radius: 0;
+}
+
+/* Minimum tap target for mobile */
+.tap-target {
+  min-height: 48px;
 }
