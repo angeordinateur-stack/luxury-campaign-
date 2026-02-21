@@ -88,7 +88,7 @@ export function buildImagePrompt(
   silhouette: string,
   mood: string,
   setting: string,
-  _brandName?: string
+  brandName?: string
 ): string {
   const sKey = asSilhouette(silhouette);
   const mKey = asMood(mood);
@@ -98,8 +98,9 @@ export function buildImagePrompt(
   const m = MOOD_PROMPTS[mKey];
   const e = SETTING_PROMPTS[eKey];
 
+  const brandPart = brandName ? ` for ${brandName}` : '';
   const parts = [
-    'High-end luxury fashion editorial photograph, single model',
+    `High-end luxury fashion editorial photograph${brandPart}, single model`,
     s.clothing,
     s.pose,
     m.expression,
