@@ -22,12 +22,11 @@ npm install
 1. Copiez `.env.example` vers `.env.local`
 2. **Important** : Sans variables d'environnement, le build utilise des placeholders. L'app ne fonctionnera qu'avec de vraies clés Supabase, Anthropic et Higgsfield.
 3. Créez un projet Supabase et exécutez le schéma SQL dans `supabase/schema.sql`
-4. Dans le dashboard Supabase > Database > Replication, activez Realtime pour : `sessions`, `brand_names`, `votes`
-5. Renseignez les variables d'environnement :
+4. (Optional) In Supabase Dashboard > Database > Replication, enable Realtime for `sessions` — if not enabled, the app uses polling every 2s to sync audience with presenter
+5. Set environment variables:
    - `NEXT_PUBLIC_SUPABASE_URL`
    - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
    - `ANTHROPIC_API_KEY`
-   - `HIGGSFIELD_API_KEY` (format `key:secret` si applicable)
 
 ## Lancement
 

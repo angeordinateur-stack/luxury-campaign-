@@ -38,7 +38,14 @@ export function useSession() {
 
         let currentSession: Session | null = sessions?.[0] ?? null;
 
-        if (!currentSession || currentSession.phase === 'reveal') {
+        // Créer une nouvelle session si aucune existe, ou si la session précédente est terminée
+        // (reveal) ou en attente d'image (generating) — pour que les visiteurs voient le début
+        const shouldStartFresh =
+          !currentSession ||
+          currentSession.phase === 'reveal' ||
+          currentSession.phase === 'generating';
+
+        if (shouldStartFresh) {
           const { data: newSession, error: insertError } = await supabase
             .from('sessions')
             .insert({ phase: 'standby' })
@@ -75,7 +82,7 @@ export function useSession() {
     if (!session) return;
 
     const channel = supabase
-      .channel('session-changes')
+      .channel(`session-changes-${session.id}`)
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'sessions', filter: `id=eq.${session.id}` },
@@ -89,6 +96,13 @@ export function useSession() {
       supabase.removeChannel(channel);
     };
   }, [session?.id]);
+
+  // Polling fallback: Realtime may not be enabled in Supabase. Poll every 2s so audience stays in sync.
+  useEffect(() => {
+    if (!session?.id) return;
+    const interval = setInterval(refetch, 2000);
+    return () => clearInterval(interval);
+  }, [session?.id, refetch]);
 
   return { session, loading, error, refetch };
 }
