@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { VOTE_OPTIONS } from '@/lib/constants';
 
@@ -21,58 +21,37 @@ export function VotingDisplay({ sessionId }: VotingDisplayProps) {
     setting: { tokyo: 0, paris: 0, desert: 0 },
   });
 
-  useEffect(() => {
-    async function fetchVotes() {
-      const { data: votes } = await supabase
-        .from('votes')
-        .select('silhouette, mood, setting')
-        .eq('session_id', sessionId);
-
-      if (!votes) return;
-
-      const newCounts: VoteCounts = {
-        silhouette: { oversized: 0, fluid: 0, sculptural: 0 },
-        mood: { quiet: 0, provocative: 0, romantic: 0 },
-        setting: { tokyo: 0, paris: 0, desert: 0 },
-      };
-
-      votes.forEach((v) => {
-        newCounts.silhouette[v.silhouette as keyof typeof newCounts.silhouette]++;
-        newCounts.mood[v.mood as keyof typeof newCounts.mood]++;
-        newCounts.setting[v.setting as keyof typeof newCounts.setting]++;
-      });
-
-      setCounts(newCounts);
-    }
-
-    fetchVotes();
+  const refreshVotes = useCallback(async () => {
+    const { data: votes } = await supabase
+      .from('votes')
+      .select('silhouette, mood, setting')
+      .eq('session_id', sessionId);
+    if (!votes) return;
+    const newCounts: VoteCounts = {
+      silhouette: { oversized: 0, fluid: 0, sculptural: 0 },
+      mood: { quiet: 0, provocative: 0, romantic: 0 },
+      setting: { tokyo: 0, paris: 0, desert: 0 },
+    };
+    votes.forEach((v) => {
+      newCounts.silhouette[v.silhouette as keyof typeof newCounts.silhouette]++;
+      newCounts.mood[v.mood as keyof typeof newCounts.mood]++;
+      newCounts.setting[v.setting as keyof typeof newCounts.setting]++;
+    });
+    setCounts(newCounts);
   }, [sessionId]);
 
   useEffect(() => {
+    refreshVotes();
+  }, [refreshVotes]);
+
+  useEffect(() => {
     const channel = supabase
-      .channel('votes-live')
+      .channel(`votes-live-${sessionId}`)
       .on(
         'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'votes', filter: `session_id=eq.${sessionId}` },
+        { event: '*', schema: 'public', table: 'votes', filter: `session_id=eq.${sessionId}` },
         () => {
-          supabase
-            .from('votes')
-            .select('silhouette, mood, setting')
-            .eq('session_id', sessionId)
-            .then(({ data: votes }) => {
-              if (!votes) return;
-              const newCounts: VoteCounts = {
-                silhouette: { oversized: 0, fluid: 0, sculptural: 0 },
-                mood: { quiet: 0, provocative: 0, romantic: 0 },
-                setting: { tokyo: 0, paris: 0, desert: 0 },
-              };
-              votes.forEach((v) => {
-                newCounts.silhouette[v.silhouette as keyof typeof newCounts.silhouette]++;
-                newCounts.mood[v.mood as keyof typeof newCounts.mood]++;
-                newCounts.setting[v.setting as keyof typeof newCounts.setting]++;
-              });
-              setCounts(newCounts);
-            });
+          refreshVotes();
         }
       )
       .subscribe();
@@ -80,7 +59,14 @@ export function VotingDisplay({ sessionId }: VotingDisplayProps) {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [sessionId]);
+  }, [sessionId, refreshVotes]);
+
+  // Polling fallback pour garantir la mise à jour des votes
+  useEffect(() => {
+    if (!sessionId) return;
+    const interval = setInterval(refreshVotes, 2000);
+    return () => clearInterval(interval);
+  }, [sessionId, refreshVotes]);
 
   function getMaxKey(obj: Record<string, number>): string {
     return Object.entries(obj).reduce((a, b) => (a[1] > b[1] ? a : b))[0];

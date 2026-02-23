@@ -25,6 +25,7 @@ export function VotingScreen({ sessionId, voterId, onSubmit }: VotingScreenProps
   });
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const canSubmit = votes.silhouette && votes.mood && votes.setting;
 
@@ -33,6 +34,7 @@ export function VotingScreen({ sessionId, voterId, onSubmit }: VotingScreenProps
     if (!canSubmit || loading) return;
 
     setLoading(true);
+    setError(null);
     try {
       const { createClient } = await import('@supabase/supabase-js');
       const supabase = createClient(
@@ -40,7 +42,7 @@ export function VotingScreen({ sessionId, voterId, onSubmit }: VotingScreenProps
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
       );
 
-      const { error } = await supabase.from('votes').upsert(
+      const { error: upsertError } = await supabase.from('votes').upsert(
         {
           session_id: sessionId,
           voter_id: voterId,
@@ -51,11 +53,12 @@ export function VotingScreen({ sessionId, voterId, onSubmit }: VotingScreenProps
         { onConflict: 'session_id,voter_id' }
       );
 
-      if (error) throw error;
+      if (upsertError) throw upsertError;
       setSubmitted(true);
       onSubmit();
     } catch (err) {
       console.error(err);
+      setError(err instanceof Error ? err.message : 'Impossible d\'enregistrer. Réessayez.');
     } finally {
       setLoading(false);
     }
@@ -90,6 +93,9 @@ export function VotingScreen({ sessionId, voterId, onSubmit }: VotingScreenProps
       </FadeIn>
 
       <form onSubmit={handleSubmit} className="w-full max-w-md space-y-8">
+        {error && (
+          <p className="text-sm text-red-500 text-center">{error}</p>
+        )}
         {(['silhouette', 'mood', 'setting'] as const).map((category, idx) => (
           <FadeIn key={category} delay={idx * 100}>
             <p className="font-display text-xs tracking-[0.15em] uppercase text-[var(--text-muted)] mb-3">

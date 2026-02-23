@@ -35,18 +35,19 @@ export default function PresenterPage() {
         .select('name')
         .eq('session_id', session.id);
       const nameList = (names ?? []).map((n: { name: string }) => n.name);
-      if (nameList.length < 3) {
-        nameList.push('Maison Éclaire', 'Atelier Lumière', 'Studio Ombre');
-      }
+      // Utiliser uniquement les noms soumis par le public — fallbacks seulement si aucun
+      const namesToUse =
+        nameList.length > 0 ? nameList : ['Maison Éclaire', 'Atelier Lumière', 'Studio Ombre'];
       const res = await fetch('/api/select-brand', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sessionId: session.id, names: nameList }),
+        body: JSON.stringify({ sessionId: session.id, names: namesToUse }),
       });
       if (!res.ok) {
+        const fallback = namesToUse[0];
         await supabase
           .from('sessions')
-          .update({ phase: 'brand_reveal', selected_brand: 'MAISON ÉCLAIRE', selected_rationale: 'Default selection.' })
+          .update({ phase: 'brand_reveal', selected_brand: fallback, selected_rationale: 'Default selection.' })
           .eq('id', session.id);
       }
       await refetch();

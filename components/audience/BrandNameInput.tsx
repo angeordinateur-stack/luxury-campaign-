@@ -12,12 +12,14 @@ export function BrandNameInput({ sessionId, onSubmit }: BrandNameInputProps) {
   const [name, setName] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!name.trim() || name.length > 20 || loading) return;
 
     setLoading(true);
+    setError(null);
     try {
       const { createClient } = await import('@supabase/supabase-js');
       const supabase = createClient(
@@ -25,16 +27,17 @@ export function BrandNameInput({ sessionId, onSubmit }: BrandNameInputProps) {
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
       );
 
-      const { error } = await supabase.from('brand_names').insert({
+      const { error: insertError } = await supabase.from('brand_names').insert({
         session_id: sessionId,
         name: name.trim(),
       });
 
-      if (error) throw error;
+      if (insertError) throw insertError;
       setSubmitted(true);
       onSubmit();
     } catch (err) {
       console.error(err);
+      setError(err instanceof Error ? err.message : 'Impossible d\'enregistrer. Réessayez.');
     } finally {
       setLoading(false);
     }
@@ -62,6 +65,9 @@ export function BrandNameInput({ sessionId, onSubmit }: BrandNameInputProps) {
           Type a luxury brand name. Make it iconic.
         </p>
         <form onSubmit={handleSubmit} className="w-full max-w-sm">
+          {error && (
+            <p className="mb-4 text-sm text-red-500 text-center">{error}</p>
+          )}
           <input
             type="text"
             value={name}

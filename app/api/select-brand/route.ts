@@ -28,11 +28,15 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    const prompt = `Tu es un expert en naming de marques de luxe. Parmi les propositions de noms de marque soumises par un public, choisis celui qui fonctionne le mieux pour une maison de couture luxe. Considère : l'élégance phonétique, la mémorabilité, le potentiel d'identité visuelle, et la résonance culturelle. Si aucun n'est assez fort, adapte légèrement le meilleur.
+    const prompt = `Tu es un expert en naming de marques de luxe. Le public a soumis des propositions de noms pour une maison de couture luxe.
 
-Noms proposés : ${filteredNames.join(', ')}
+RÈGLE IMPORTANTE : Tu DOIS choisir UN des noms proposés ci-dessous. Ne modifie pas le nom, ne le traduis pas, ne l'adapte pas — utilise-le exactement tel quel. Le choix doit venir des votants.
 
-Réponds en JSON uniquement : { "selected_name": "...", "rationale": "une phrase, max 15 mots" }`;
+Noms proposés par le public : ${filteredNames.join(', ')}
+
+Choisis celui qui fonctionne le mieux pour une maison de couture luxe (élégance phonétique, mémorabilité, potentiel d'identité visuelle, résonance culturelle).
+
+Réponds en JSON uniquement : { "selected_name": "exactement un des noms ci-dessus", "rationale": "une phrase, max 15 mots" }`;
 
     const message = await anthropic.messages.create({
       model: 'claude-sonnet-4-20250514',
@@ -45,7 +49,11 @@ Réponds en JSON uniquement : { "selected_name": "...", "rationale": "une phrase
     const jsonMatch = text.match(/\{[\s\S]*\}/);
     const parsed = jsonMatch ? JSON.parse(jsonMatch[0]) : {};
 
-    const selected_name = parsed.selected_name || filteredNames[0] || FALLBACK_BRAND;
+    const rawSelected = (parsed.selected_name || '').trim();
+    const selected_name =
+      filteredNames.find((n) => n.toLowerCase() === rawSelected.toLowerCase()) ??
+      filteredNames[0] ??
+      FALLBACK_BRAND;
     const rationale = parsed.rationale || 'Sélection pour son potentiel.';
 
     const supabase = createClient(

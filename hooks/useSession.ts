@@ -38,12 +38,10 @@ export function useSession() {
 
         let currentSession: Session | null = sessions?.[0] ?? null;
 
-        // Créer une nouvelle session si aucune existe, ou si la session précédente est terminée
-        // (reveal) ou en attente d'image (generating) — pour que les visiteurs voient le début
-        const shouldStartFresh =
-          !currentSession ||
-          currentSession.phase === 'reveal' ||
-          currentSession.phase === 'generating';
+        // Créer une nouvelle session UNIQUEMENT si aucune n'existe.
+        // Ne pas créer de session quand reveal/generating : cela provoquait des sessions
+        // multiples et un décalage entre présentateur et audience (noms/votes perdus).
+        const shouldStartFresh = !currentSession;
 
         if (shouldStartFresh) {
           const { data: newSession, error: insertError } = await supabase
