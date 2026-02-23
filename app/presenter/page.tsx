@@ -96,10 +96,16 @@ export default function PresenterPage() {
         .update({ phase: 'generating', updated_at: new Date().toISOString() })
         .eq('id', session.id);
 
+      // Passer explicitement les votes gagnants pour garantir que le prompt matche les votes
       await fetch('/api/generate-campaign', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sessionId: session.id }),
+        body: JSON.stringify({
+          sessionId: session.id,
+          winning_silhouette: session.winning_silhouette || 'oversized',
+          winning_mood: session.winning_mood || 'quiet',
+          winning_setting: session.winning_setting || 'tokyo',
+        }),
       });
       await refetch();
       setIsAdvancing(false);

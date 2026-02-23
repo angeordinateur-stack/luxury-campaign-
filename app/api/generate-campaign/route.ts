@@ -14,7 +14,8 @@ function getLabel(category: 'silhouette' | 'mood' | 'setting', key: string): str
 
 export async function POST(request: NextRequest) {
   try {
-    const { sessionId } = await request.json();
+    const { sessionId, winning_silhouette: reqSilhouette, winning_mood: reqMood, winning_setting: reqSetting } =
+      await request.json();
 
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -32,9 +33,10 @@ export async function POST(request: NextRequest) {
     }
 
     const brandName = session.selected_brand || 'Maison';
-    const silhouette = session.winning_silhouette || 'oversized';
-    const mood = session.winning_mood || 'quiet';
-    const setting = session.winning_setting || 'tokyo';
+    // Priorité aux valeurs passées explicitement (votes réels), sinon session, sinon défauts
+    const silhouette = reqSilhouette ?? session.winning_silhouette ?? 'oversized';
+    const mood = reqMood ?? session.winning_mood ?? 'quiet';
+    const setting = reqSetting ?? session.winning_setting ?? 'tokyo';
 
     const silhouetteLabel = getLabel('silhouette', silhouette);
     const moodLabel = getLabel('mood', mood);
@@ -85,6 +87,9 @@ Be specific to the brief. Think Vogue Italia, Jacquemus, old Céline. No generic
         campaign_target: target_audience,
         campaign_channels: launch_channels,
         campaign_name,
+        winning_silhouette: silhouette,
+        winning_mood: mood,
+        winning_setting: setting,
         phase: 'generating',
         updated_at: new Date().toISOString(),
       })
